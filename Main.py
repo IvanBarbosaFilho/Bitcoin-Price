@@ -80,3 +80,52 @@ modelo = Sequential([
 
 modelo.compile(optimizer='adam', loss='mean_squared_error')
 
+#Early Stooping
+
+early_stop = Earlystopping(
+        monitor='vel_loss',
+        patience=10,
+        restore_best_weight=True,
+        min_delta=0.0001
+)
+
+#treinamento de modelo
+
+historico = modelo.fit(
+        X_treino, Y_treino,
+        validation_split=0.2,
+        epochs=100,
+        batch_size=32,
+        callbacks=[early_stop],
+        verbose=1
+)
+
+#Histórico de perda do modelo
+
+plt.figure(figsize=(10,5))
+plt.plot(historico.history['loss'], label='Treino')
+plt.plot(historico.history['val_loss'], label='Validação')
+plt.title('Histórico de perda do modelo')
+plt.Xlabel('Epochs')
+plt.Ylabel('Perda')
+plt.legend()
+plt.show()
+
+#Previsão
+
+def fazer_previsao(modelo, dados_entrada, escala):
+    previsao = modelo.predict(dados_entrada)
+    previsao = escala.inverse_transform(previsao)
+
+    return previsao
+
+previsões = fazer_previsao(modelo, X_teste, escala)
+
+plt.figure(figsize=(10,5))
+plt.plot(Y_teste, label='Valores Reais', color='Blue')
+plt.plot(previsoes, label='Previsões', color='Red')
+plt.title('Previsões do preço de Bitcoin')
+plt.Xlabel('Amostras')
+plt.Ylabel('Preço')
+plt.legend()
+plt.show()
